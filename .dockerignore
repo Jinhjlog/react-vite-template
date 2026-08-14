@@ -1,0 +1,25 @@
+# 빌드 컨텍스트에서 제외 — 빌드 속도와 이미지 크기에 직결됩니다.
+node_modules
+dist
+.git
+.gitignore
+
+# 로컬 환경 (VITE_ 값은 빌드 인자로 넘깁니다 — Dockerfile 주석 참고)
+.env
+.env.local
+.env.*.local
+
+# 개발 도구 산출물
+.playwright-mcp
+*.log
+.DS_Store
+.vscode
+.idea
+
+# 빌드에 불필요한 문서·에이전트 자산
+docs
+.claude
+.mcp.json
+AGENTS.md
+CLAUDE.md
+README.md

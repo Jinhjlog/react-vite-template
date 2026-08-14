@@ -9,7 +9,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "setup": "node scripts/setup.mjs"
+    "setup": "node scripts/setup.mjs",
+    "docker:build": "docker build -t react-vite-template .",
+    "docker:run": "docker run --rm -p 8080:80 react-vite-template"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
