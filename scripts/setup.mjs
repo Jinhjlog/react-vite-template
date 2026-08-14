@@ -14,8 +14,8 @@
  *
  * 의존성 없음 — Node 내장 모듈만 사용한다.
  */
-import { execSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createInterface } from 'node:readline/promises'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -176,9 +176,15 @@ try {
 
   // ── 4. git ──────────────────────────────────────
   console.log('')
+  // git 명령은 셸을 거치지 않고 직접 실행한다.
+  // 셸을 거치면 Windows(cmd.exe)에서 따옴표·이모지 인코딩이 깨진다.
+  const git = (args, opts = {}) => execFileSync('git', args, { cwd: ROOT, ...opts })
+
   let commitCount = null
   try {
-    commitCount = Number(execSync('git rev-list --count HEAD', { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim())
+    commitCount = Number(
+      git(['rev-list', '--count', 'HEAD'], { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(),
+    )
   } catch {
     commitCount = existsSync(p('.git')) ? 0 : null
   }
@@ -189,8 +195,8 @@ try {
     // 커밋이 없다 = 되돌릴 히스토리도 없다. 안전하므로 기본값 Yes.
     const doCommit = await confirm(`${C.bold}첫 커밋을 만들까요?${C.off}`, true)
     if (doCommit && !flags.dry) {
-      execSync('git add -A', { cwd: ROOT, stdio: 'inherit' })
-      execSync(`git commit -q -m "🎉 init: ${name}"`, { cwd: ROOT, stdio: 'inherit' })
+      git(['add', '-A'])
+      git(['commit', '-q', '-m', `🎉 init: ${name}`])
       info(`✓ 첫 커밋 생성 — 🎉 init: ${name}`)
     } else if (doCommit) {
       console.log('  [DRY RUN] git add -A && git commit')
@@ -203,13 +209,14 @@ try {
       false,
     )
     if (doReset && !flags.dry) {
-      execSync('rm -rf .git', { cwd: ROOT })
-      execSync('git init -q', { cwd: ROOT })
-      execSync('git add -A', { cwd: ROOT })
-      execSync(`git commit -q -m "🎉 init: ${name}"`, { cwd: ROOT })
+      // rm -rf 는 Windows(cmd.exe)에 없는 명령이다. Node 내장 API를 쓴다.
+      rmSync(p('.git'), { recursive: true, force: true })
+      git(['init', '-q'])
+      git(['add', '-A'])
+      git(['commit', '-q', '-m', `🎉 init: ${name}`])
       info(`✓ git 히스토리 초기화 + 첫 커밋`)
     } else if (doReset) {
-      console.log('  [DRY RUN] rm -rf .git && git init && git add -A && git commit')
+      console.log('  [DRY RUN] .git 삭제 → git init → git add -A → git commit')
     } else {
       console.log('  히스토리는 그대로 둡니다.')
     }
