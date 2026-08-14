@@ -114,6 +114,33 @@ import { http } from "@/lib/http"; // 공용 코드 → @/ 별칭
 
 `@/` 는 `src/` 를 가리킵니다.
 
+## 배포 (Docker)
+
+```bash
+npm run docker:build    # 이미지 빌드
+npm run docker:run      # http://localhost:8080
+```
+
+멀티 스테이지입니다. Node로 빌드한 뒤 **결과물(`dist/`)만 nginx 이미지에 넣습니다.** 최종 이미지에 Node 런타임과 `node_modules`는 들어가지 않습니다 (61.9MB).
+
+### ⚠️ 환경변수는 빌드 시점에 박힙니다
+
+Vite의 `VITE_*` 변수는 번들 파일 안에 문자열로 들어갑니다. **컨테이너 실행 시 `-e` 로 넘겨도 반영되지 않습니다.**
+
+```bash
+docker build --build-arg VITE_API_BASE_URL=https://api.example.com -t react-vite-template .
+```
+
+Dokploy에서는 **Build Args** 입력란에 넣으세요. Environment 탭에 넣으면 적용되지 않습니다.
+
+### Dokploy 배포
+
+1. Application 생성 → 이 저장소 연결
+2. Build Type을 **Dockerfile** 로 선택
+3. Port를 **80** 으로 지정
+4. `VITE_*` 값이 필요하면 Build Args에 추가
+5. 도메인 연결 — Traefik이 SSL을 자동 발급합니다
+
 ## 기술 스택
 
 | 영역            | 사용                                                      |
@@ -139,3 +166,89 @@ import { http } from "@/lib/http"; // 공용 코드 → @/ 별칭
 `bg-gray-100` 같은 Tailwind 기본 팔레트나 `bg-[#fff]` 같은 임의값은 쓰지 않습니다. 사용 가능한 토큰은 `bg-bg` `bg-surface` `border-border` `text-text` `text-text-strong` `text-text-muted` `text-accent` 입니다.
 
 새 색이 필요하면 `src/styles/tokens.css` 의 **세 곳**(라이트 `:root`, 다크모드 블록, `@theme inline`)에 함께 추가하세요.
+
+## Windows에서 개발할 때
+
+### 줄바꿈(LF/CRLF) — 이 저장소는 이미 처리돼 있습니다
+
+Windows는 줄바꿈을 `CRLF`(`\r\n`), macOS·Linux는 `LF`(`\n`)로 씁니다. 아무 설정이 없으면 이런 일이 벌어집니다.
+
+- `warning: LF will be replaced by CRLF` 경고가 계속 뜸
+- **한 글자도 안 고쳤는데 파일 전체가 수정된 것으로 잡힘** → diff가 통째로 빨개져서 리뷰 불가
+- macOS 팀원과 서로 상대방 커밋을 되돌리는 핑퐁 발생
+
+이 저장소에는 **`.gitattributes`** 가 있어서 이미 해결돼 있습니다.
+
+```
+* text=auto eol=lf
+```
+
+**`.gitattributes` 는 개인의 git 설정보다 우선합니다.** 그래서 이 저장소에서는 각자 아무 설정도 하지 않아도 됩니다.
+
+### 명령어로 설정하는 방법 (다른 저장소용)
+
+`.gitattributes` 가 없는 프로젝트에서는 개인이 직접 맞춰야 합니다. 이게 흔히 말하는 그 설정입니다.
+
+```bash
+# Windows
+git config --global core.autocrlf true
+
+# macOS / Linux
+git config --global core.autocrlf input
+```
+
+| 값 | 저장소에 저장될 때 | 내 PC로 받을 때 |
+| --- | --- | --- |
+| `true` (Windows) | CRLF → **LF 변환** | LF → **CRLF 변환** |
+| `input` (Mac/Linux) | CRLF → **LF 변환** | 변환 안 함 |
+| `false` | 변환 안 함 | 변환 안 함 |
+
+핵심은 **저장소에는 항상 LF만 들어가게** 하는 것입니다. 현재 설정 확인은 이렇게 합니다.
+
+```bash
+git config --get core.autocrlf
+```
+
+### 이미 CRLF로 받아버렸다면
+
+경고가 계속 뜨거나 diff가 이상하면 재정규화합니다.
+
+```bash
+git add --renormalize .
+git status                # 변경된 파일 확인
+git commit -m "chore: 줄바꿈 정규화"
+```
+
+작업 중인 변경이 없다면 다시 클론하는 게 제일 깔끔합니다.
+
+### 그 외 Windows에서 자주 막히는 것
+
+**1. npm 실행이 차단됨**
+
+```
+npm : File C:\...\npm.ps1 cannot be loaded because running scripts is disabled
+```
+
+PowerShell을 관리자로 열고 한 번만 실행합니다.
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+**2. 경로가 너무 길다는 에러**
+
+`node_modules` 는 폴더 깊이가 깊어서 Windows의 260자 제한에 걸립니다.
+
+```bash
+git config --global core.longpaths true
+```
+
+**3. 파일명 대소문자 — 로컬은 되는데 배포가 깨짐**
+
+Windows와 macOS는 파일명 대소문자를 구분하지 않지만, **Docker 빌드는 Linux라 구분합니다.**
+
+```tsx
+import { MovieCard } from './components/moviecard'   // ❌ 실제 파일은 MovieCard.tsx
+```
+
+내 PC에서는 잘 되다가 `npm run docker:build` 나 배포에서만 `Module not found` 가 납니다. **import 경로의 대소문자를 파일명과 정확히 맞추세요.**
