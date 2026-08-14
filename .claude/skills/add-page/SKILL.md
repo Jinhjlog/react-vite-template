@@ -121,7 +121,10 @@ npm run lint && npm run build
 **페이지를 만들었으면 눈으로 확인한다.** 빌드 통과는 화면이 제대로 나온다는 뜻이 아니다.
 
 ```bash
-lsof -ti:5173        # 이미 떠 있으면 그 서버를 쓴다 (죽이지 않는다)
+# 이미 떠 있으면 그 서버를 쓴다 (죽이지 않는다)
+lsof -ti:5173                      # macOS / Linux
+netstat -ano | findstr :5173       # Windows
+
 npm run dev          # 없을 때만 띄운다
 ```
 

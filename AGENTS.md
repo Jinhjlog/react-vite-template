@@ -189,7 +189,9 @@ src/pages/
 
 **절차**
 
-1. 5173 포트에 이미 dev 서버가 떠 있는지 먼저 확인한다 — `lsof -ti:5173`
+1. 5173 포트에 이미 dev 서버가 떠 있는지 먼저 확인한다.
+   - macOS/Linux: `lsof -ti:5173`
+   - Windows: `netstat -ano | findstr :5173`
 2. 떠 있으면 **그대로 쓴다.** 사용자가 쓰던 서버일 수 있으므로 **절대 죽이지 않는다.**
 3. 없으면 `npm run dev` 로 띄운다.
 4. Playwright MCP로 `http://localhost:5173` 접속 → 해당 화면으로 이동 → 스크린샷 확인.
@@ -230,7 +232,13 @@ npm run dev      # 개발 서버 (http://localhost:5173)
 npm run build    # 타입체크(tsc) + 프로덕션 빌드
 npm run lint     # 규칙 검사 (oxlint)
 npm run preview  # 빌드 결과 미리보기
+
+npm run docker:build   # 프로덕션 이미지 빌드
+npm run docker:run     # 컨테이너 실행 (http://localhost:8080)
 ```
+
+**Docker** — 멀티 스테이지(Node 빌드 → nginx 서빙). `VITE_*` 환경변수는 **빌드 시점에 번들에 박히므로**
+런타임 `-e` 가 아니라 `--build-arg` 로 넘긴다. nginx 설정은 `docker/nginx.conf` (SPA 폴백 필수).
 
 **`npm run setup`** — 템플릿을 복제한 사람이 **1회만** 실행하는 부트스트랩이다.
 이름 치환·`.env.local` 생성·첫 커밋을 처리한다. **에이전트가 임의로 실행하지 않는다** (사람이 직접 돌린다).
@@ -246,6 +254,7 @@ npm run preview  # 빌드 결과 미리보기
 | 린트 규칙             | `.oxlintrc.json`                       |
 | 화면 확인 (MCP)       | `.mcp.json` — Playwright MCP           |
 | 부트스트랩 (사람 전용) | `scripts/setup.mjs`                    |
+| 배포 이미지           | `Dockerfile`, `docker/nginx.conf`      |
 | 새 기능 추가 절차     | `.claude/skills/add-feature/`          |
 | 새 페이지 추가 절차   | `.claude/skills/add-page/`             |
 | 컴포넌트 복사 절차    | `.claude/skills/copy-component/`       |
