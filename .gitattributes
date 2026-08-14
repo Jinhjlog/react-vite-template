@@ -1,0 +1,27 @@
+# 줄바꿈(EOL) 정규화 — Windows / macOS 혼용 팀 필수 설정
+#
+# 이 파일이 없으면 Windows에서 클론할 때 파일이 CRLF로 바뀌고,
+# 커밋할 때 "파일 전체가 수정됨"으로 잡혀서 diff가 통째로 빨개집니다.
+# .gitattributes 는 개인의 core.autocrlf 설정보다 우선하므로,
+# 팀원이 각자 git 설정을 맞출 필요가 없습니다.
+
+# 텍스트 파일은 저장소에도, 체크아웃할 때도 LF 로 통일한다.
+* text=auto eol=lf
+
+# 바이너리 — 절대 변환하지 않는다 (변환되면 파일이 깨진다)
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
+*.avif binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.pdf  binary
+*.zip  binary
+
+# 잠금 파일은 diff 를 접어서 리뷰를 방해하지 않게 한다.
+package-lock.json linguist-generated=true -diff
