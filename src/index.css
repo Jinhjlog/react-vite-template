@@ -1,0 +1,17 @@
+@import 'tailwindcss';
+@import './styles/tokens.css';
+
+/**
+ * 전역 기본값만 둡니다.
+ * 개별 화면 스타일은 여기에 쓰지 말고 컴포넌트에 Tailwind 클래스로 작성하세요.
+ * (전역 CSS는 어느 화면이 영향받는지 보이지 않습니다 — 이 프로젝트가 피하려는 것)
+ */
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+
+  body {
+    @apply bg-bg text-text antialiased;
+  }
+}

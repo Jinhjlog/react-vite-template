@@ -1,0 +1,118 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc", "import"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    "import/no-cycle": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/features/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*", "@/features/*/**"],
+                "message": "다른 feature를 import할 수 없습니다. (1) 필요한 코드를 이 feature 안으로 복사하거나, (2) pages/ 에서 두 feature를 조합하세요. AGENTS.md §1.1"
+              },
+              {
+                "group": ["@/pages/*", "@/pages/*/**"],
+                "message": "feature는 page를 import할 수 없습니다. 의존 방향은 항상 pages -> features 한 방향입니다. AGENTS.md §1.1"
+              },
+              {
+                "group": ["../../*", "../../**"],
+                "message": "feature 폴더 밖으로 나가는 상대경로(../../)는 금지입니다. 공용 코드는 '@/lib', '@/types', '@/styles' 로 import하세요. 다른 feature라면 애초에 import가 금지입니다. AGENTS.md §1.1"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/features/*/components/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*", "@/features/*/**"],
+                "message": "다른 feature를 import할 수 없습니다. (1) 필요한 코드를 이 feature 안으로 복사하거나, (2) pages/ 에서 두 feature를 조합하세요. AGENTS.md §1.1"
+              },
+              {
+                "group": ["@/pages/*", "@/pages/*/**"],
+                "message": "feature는 page를 import할 수 없습니다. 의존 방향은 항상 pages -> features 한 방향입니다. AGENTS.md §1.1"
+              },
+              {
+                "group": ["../../*", "../../**"],
+                "message": "feature 폴더 밖으로 나가는 상대경로(../../)는 금지입니다. 공용 코드는 '@/lib', '@/types', '@/styles' 로 import하세요. AGENTS.md §1.1"
+              },
+              {
+                "group": [
+                  "@/lib/http",
+                  "../api",
+                  "../api/*",
+                  "./api",
+                  "./api/*",
+                  "../hooks",
+                  "../hooks/*",
+                  "./hooks",
+                  "./hooks/*"
+                ],
+                "message": "컴포넌트는 데이터를 직접 가져오지 않습니다(Presenter). api/hooks 호출은 pages/ 에서 하고 결과를 props로 내려주세요. AGENTS.md §1.4"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/pages/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/pages/*", "@/pages/*/**"],
+                "message": "다른 페이지의 코드를 가져다 쓸 수 없습니다. 필요하면 복사하세요. 라우트 등록은 src/routes.tsx 에서 합니다. AGENTS.md §1.4"
+              },
+              {
+                "group": [
+                  "./*/components/*",
+                  "./*/components/**",
+                  "../*/components/*",
+                  "../*/components/**"
+                ],
+                "message": "다른 라우트 폴더의 components/ 는 그 라우트 전용입니다. 필요하면 자기 라우트로 복사하고 @duplicate-of 주석을 남기세요. AGENTS.md §1.4"
+              },
+              {
+                "group": ["../../*", "../../**"],
+                "message": "라우트 폴더 밖으로 나가는 상대경로(../../)는 금지입니다. feature는 '@/features/...', 공용 코드는 '@/lib' 로 import하세요. AGENTS.md §1.4"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/lib/**", "src/types/**", "src/styles/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*", "@/features/*/**", "@/pages/*", "@/pages/*/**"],
+                "message": "공용 코드(lib/types/styles)는 features나 pages를 import할 수 없습니다. 의존은 항상 아래로만 흐릅니다. AGENTS.md §1.1"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

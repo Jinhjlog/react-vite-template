@@ -1,0 +1,53 @@
+/**
+ * 디자인 토큰 — 공용 고정 구역 (복사 금지)
+ *
+ * 색상이 화면마다 갈라지면 사용자가 바로 알아챕니다.
+ * 그래서 여기 있는 값은 절대 feature 안으로 복사하지 않습니다.
+ *
+ * ⚠️ 간격·모서리·폰트 크기는 여기에 정의하지 않습니다.
+ *    Tailwind 기본 스케일(p-4, rounded-md, text-sm ...)을 그대로 씁니다.
+ *    여기에 또 만들면 진실이 두 벌이 됩니다.
+ *
+ * 새 색이 필요하면 아래 :root 와 dark 양쪽에 추가하고,
+ * @theme inline 에 --color-<이름> 을 한 줄 등록하세요.
+ * 그러면 bg-<이름> / text-<이름> / border-<이름> 이 자동으로 생깁니다.
+ */
+
+:root {
+  --bg: oklch(100% 0 0);
+  --surface: oklch(97.5% 0.004 300);
+  --border: oklch(91% 0.006 300);
+  --text: oklch(44% 0.015 300);
+  --text-strong: oklch(18% 0.02 300);
+  --text-muted: oklch(62% 0.012 300);
+  --accent: oklch(52% 0.24 285);
+  --accent-fg: oklch(100% 0 0);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(19% 0.012 285);
+    --surface: oklch(23% 0.014 285);
+    --border: oklch(31% 0.016 285);
+    --text: oklch(76% 0.018 300);
+    --text-strong: oklch(96% 0.005 300);
+    --text-muted: oklch(58% 0.016 300);
+    --accent: oklch(76% 0.15 300);
+    --accent-fg: oklch(19% 0.012 285);
+  }
+}
+
+/**
+ * 위 변수를 Tailwind 유틸리티로 노출합니다.
+ * inline 을 붙여야 :root 가 바뀔 때(다크모드) 값이 따라갑니다.
+ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-strong: var(--text-strong);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+}
